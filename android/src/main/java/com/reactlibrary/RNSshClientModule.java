@@ -2,7 +2,7 @@ package com.reactlibrary;
 
 import android.os.Environment;
 import android.util.Log;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -179,17 +179,21 @@ public class RNSshClientModule extends ReactContextBaseJavaModule {
           client._bufferedReader = new BufferedReader(new InputStreamReader(in));
           client._dataOutputStream = new DataOutputStream(channel.getOutputStream());
 
-          callback.invoke();
+          // callback.invoke();
 
-//        int charVal;
           String line;
-          while (client._bufferedReader != null && (line = client._bufferedReader.readLine()) != null) {
-            WritableMap map = Arguments.createMap();
-            map.putString("name", "Shell");
-            map.putString("key", key);
-            map.putString("value", line + '\n');
-//          map.putString("value", String.valueOf(charVal));
-            sendEvent(reactContext, "Shell", map);
+          while (client._bufferedReader != null) {
+            line = "";
+            while (client._bufferedReader.ready()){
+              line += Character.toString ((char) client._bufferedReader.read());
+            }
+            if (line.length() != 0) {
+              WritableMap map = Arguments.createMap();
+              map.putString("name", "Shell");
+              map.putString("key", key);
+              map.putString("value", line);
+              sendEvent(reactContext, "Shell", map);
+            }
           }
 
         } catch (JSchException error) {
